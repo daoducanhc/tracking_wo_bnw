@@ -17,7 +17,7 @@ import torchvision
 import torchvision.models.detection
 import torchvision.models.detection.mask_rcnn
 
-from coco_utils import get_coco, get_coco_kp
+# from coco_utils import get_coco, get_coco_kp
 
 from group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
 from engine import train_one_epoch, evaluate
@@ -25,6 +25,19 @@ from engine import train_one_epoch, evaluate
 import utils
 import transforms as T
 
+from pytorch_utils import faster_rcnn
+
+def get_detection_model(num_classes):
+    # load an instance segmentation model pre-trained on COCO
+    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=True)
+
+    # get the number of input features for the classifier
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    # replace the pre-trained head with a new one
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+    model.roi_heads.nms_thresh = 0.3
+
+    return model
 
 def get_dataset(name, image_set, transform, data_path):
     paths = {
@@ -82,8 +95,15 @@ def main(args):
         collate_fn=utils.collate_fn)
 
     print("Creating model")
-    model = torchvision.models.detection.__dict__[args.model](num_classes=num_classes,
-                                                              pretrained=args.pretrained)
+
+    #maskrcnn_resnet50_fpn
+
+    # model = torchvision.models.detection.__dict__[args.model](num_classes=num_classes,
+    # model = torchvision.models.detection.maskrcnn_resnet50_fpn(num_classes=num_classes,
+    #                                                           pretrained=args.pretrained)
+
+    model = get_detection_model(2)
+
     model.to(device)
 
     model_without_ddp = model

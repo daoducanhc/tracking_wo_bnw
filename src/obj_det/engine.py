@@ -26,12 +26,24 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
 
 
     loss_dicts = []
+    # box_features = []
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
 
         loss_dict = model(images, targets)
+
+        # loss_dict, roi_feature = model(images, targets)
+        # loss_dict, box_feature = model(images)
+        # box_features.append(box_feature)
+
+        # dets = loss_dict[0]['boxes']
+        # dets = torch.cat((dets, loss_dict[0]['scores'].unsqueeze(1)), dim=1)
+        # dets = torch.cat((dets, box_feature), dim=1)
+
+        # print(len(box_features))
+        # if(len(box_features)==10): break
 
         losses = sum(loss for loss in loss_dict.values())
 
@@ -62,6 +74,8 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         # tb_writer.add_scalar('TRAIN/LR', lr_scheduler.get_last_lr(), epoch)
 
     return loss_dicts
+    # return loss_dicts, roi_features
+
 
 
 def _get_iou_types(model):
