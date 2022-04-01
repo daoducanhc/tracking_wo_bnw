@@ -183,6 +183,7 @@ class JDETracker(object):
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model = get_detection_model(2)
         self.model.to(self.device)
+        self.model.load_state_dict(torch.load(osp.join("output/mot_17", '.model'), map_location=self.device)
         # load_darknet_weights(self.model, opt.weights)
         # self.model.load_state_dict(torch.load(opt.weights, map_location='cpu')['model'], strict=False)
         self.model.eval()

@@ -9,7 +9,7 @@ from PIL import Image
 import os.path as osp
 
 data_root_dir = 'data/MOT17Det'
-output_dir = "output/faster_rcnn_fpn/faster_rcnn_fpn_training_mot_17_split_09"
+output_dir = "output/mot_17"
 
 if not osp.exists(output_dir):
     os.makedirs(output_dir)
@@ -21,40 +21,42 @@ from mot_data import MOTObjDetect
 import matplotlib.pyplot as plt
 import transforms as T
 
-def plot(img, boxes):
-  fig, ax = plt.subplots(1, dpi=96)
+# def plot(img, boxes):
+#   fig, ax = plt.subplots(1, dpi=96)
 
-  img = img.mul(255).permute(1, 2, 0).byte().numpy()
-  width, height, _ = img.shape
+#   img = img.mul(255).permute(1, 2, 0).byte().numpy()
+#   width, height, _ = img.shape
 
-  ax.imshow(img, cmap='gray')
-  fig.set_size_inches(width / 80, height / 80)
+#   ax.imshow(img, cmap='gray')
+#   fig.set_size_inches(width / 80, height / 80)
 
-  for box in boxes:
-      rect = plt.Rectangle(
-        (box[0], box[1]),
-        box[2] - box[0],
-        box[3] - box[1],
-        fill=False,
-        linewidth=1.0)
-      ax.add_patch(rect)
+#   for box in boxes:
+#       rect = plt.Rectangle(
+#         (box[0], box[1]),
+#         box[2] - box[0],
+#         box[3] - box[1],
+#         fill=False,
+#         linewidth=1.0)
+#       ax.add_patch(rect)
 
-  plt.axis('off')
-  plt.show()
+#   plt.axis('off')
+#   plt.show()
 
-dataset = MOTObjDetect(osp.join(data_root_dir, 'train'), split_seqs=['MOT17-09'])
-print(len(dataset))
+# dataset = MOTObjDetect(osp.join(data_root_dir, 'train'), split_seqs=['MOT17-09'])
+# print(len(dataset))
+
 # img, target = dataset[-5]
 # img, target = T.ToTensor()(img, target)
 # plot(img, target['boxes'])
 
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-
+from pytorch_utils import faster_rcnn
 
 def get_detection_model(num_classes):
     # load an instance segmentation model pre-trained on COCO
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+    # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=True)
 
     # get the number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -63,6 +65,7 @@ def get_detection_model(num_classes):
     model.roi_heads.nms_thresh = 0.3
 
     return model
+
 
 from engine import train_one_epoch, evaluate
 import utils
@@ -79,9 +82,9 @@ def get_transform(train):
 
 train_split_seqs = test_split_seqs = None
 
-# train_split_seqs = ['MOT17-02', 'MOT17-04', 'MOT17-05', 'MOT17-09', 'MOT17-10', 'MOT17-11', 'MOT17-13']
+train_split_seqs = ['MOT17-02', 'MOT17-04', 'MOT17-05', 'MOT17-09', 'MOT17-10', 'MOT17-11', 'MOT17-13']
+# train_split_seqs = ['MOT17-05', 'MOT17-09', 'MOT17-11']
 
-train_split_seqs = ['MOT17-05', 'MOT17-09', 'MOT17-11']
 test_split_seqs = ['MOT17-09']
 for seq in test_split_seqs:
     train_split_seqs.remove(seq)
@@ -132,7 +135,7 @@ model = get_detection_model(dataset.num_classes)
 # move model to the right device
 model.to(device)
 
-# model_state_dict = torch.load(osp.join(output_dir, 'model_epoch_30.model'))
+# model_state_dict = torch.load(osp.join(output_dir, 'model_epoch_27.model'), map_location=device)
 # model.load_state_dict(model_state_dict)
 
 # construct an optimizer
@@ -174,12 +177,12 @@ for epoch in range(1, num_epochs + 1):
     print(f'TRAIN {data_loader.dataset}')
     # train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
 
-    loss = train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
-    break
+    train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
+
     # update the learning rate
     lr_scheduler.step()
 
     # evaluate on the test dataset
-    if epoch % 3 == 0:
+    if epoch % 10 == 0:
       evaluate_and_write_result_files(model, data_loader_test)
       torch.save(model.state_dict(), osp.join(output_dir, f"model_epoch_{epoch}.model"))

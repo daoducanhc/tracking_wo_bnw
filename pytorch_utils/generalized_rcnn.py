@@ -10,7 +10,9 @@ from torch import nn
 import warnings
 from torch.jit.annotations import Tuple, List, Dict, Optional
 from torch import Tensor
-
+import numpy as np
+import torch.nn.functional as F
+import math
 
 class GeneralizedRCNN(nn.Module):
     """
@@ -101,9 +103,12 @@ class GeneralizedRCNN(nn.Module):
         detections, detector_losses, box_features = self.roi_heads(features, proposals, images.image_sizes, targets)
         detections = self.transform.postprocess(detections, images.image_sizes, original_image_sizes)
 
+        reID_losses = {"loss_reID" : reIDLoss(detections, box_features, targets)}
+
         losses = {}
         losses.update(detector_losses)
         losses.update(proposal_losses)
+        losses.update(reID_losses)
 
         if torch.jit.is_scripting():
             if not self._has_warned:
@@ -113,3 +118,66 @@ class GeneralizedRCNN(nn.Module):
         else:
             # return self.eager_outputs(losses, detections)
             return (self.eager_outputs(losses, detections), box_features)
+
+def reIDLoss(detections, box_features, targets):
+    nID = 548
+    emb_scale = math.sqrt(2) * math.log(nID-1)
+
+    lid = torch.Tensor(1).fill_(0).squeeze()
+    if len(detections) > 0:
+        batches = len(detections)
+        # losses = []
+        for batch in range(batches):
+            detection = detections[batch]
+            target = targets[batch]
+
+            anchor_list = detection['boxes']
+            gt_box = target['boxes']
+
+            iou_scores = bbox_overlaps(anchor_list, gt_box)
+
+            track_ids = target['track_ids']
+
+            iou_max, index = iou_scores.max(1)
+            id_index = iou_max > 0.5
+
+            embedding = box_features[id_index]
+            embedding = emb_scale * F.normalize(embedding)
+
+            embedding = nn.Linear(embedding.shape[1], nID)(embedding).contiguous()
+
+            index = index[id_index]
+            tids = track_ids[index]
+
+            lid = nn.CrossEntropyLoss(ignore_index=-1)(embedding, tids)
+
+    return lid
+
+
+def bbox_overlaps(boxes, query_boxes):
+    """
+    Parameters
+    ----------
+    boxes: (N, 4) ndarray or tensor or variable
+    query_boxes: (K, 4) ndarray or tensor or variable
+    Returns
+    -------
+    overlaps: (N, K) overlap between boxes and query_boxes
+    """
+    if isinstance(boxes, np.ndarray):
+        boxes = torch.from_numpy(boxes)
+        query_boxes = torch.from_numpy(query_boxes)
+        out_fn = lambda x: x.numpy()  # If input is ndarray, turn the overlaps back to ndarray when return
+    else:
+        out_fn = lambda x: x
+
+    box_areas = (boxes[:, 2] - boxes[:, 0] + 1) * (boxes[:, 3] - boxes[:, 1] + 1)
+    query_areas = (query_boxes[:, 2] - query_boxes[:, 0] + 1) * (query_boxes[:, 3] - query_boxes[:, 1] + 1)
+
+    iw = (torch.min(boxes[:, 2:3], query_boxes[:, 2:3].t()) - torch.max(boxes[:, 0:1],
+                                                                        query_boxes[:, 0:1].t()) + 1).clamp(min=0)
+    ih = (torch.min(boxes[:, 3:4], query_boxes[:, 3:4].t()) - torch.max(boxes[:, 1:2],
+                                                                        query_boxes[:, 1:2].t()) + 1).clamp(min=0)
+    ua = box_areas.view(-1, 1) + query_areas.view(1, -1) - iw * ih
+    overlaps = iw * ih / ua
+    return out_fn(overlaps)

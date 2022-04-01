@@ -826,6 +826,20 @@ class RoIHeads(torch.nn.Module):
                 "loss_classifier": loss_classifier,
                 "loss_box_reg": loss_box_reg
             }
+
+            boxes, scores, labels, box_features = self.postprocess_detections_with_box_features(class_logits, box_regression, proposals, image_shapes, box_features)
+
+            box_features = IDExtractor(len(box_features[0]), 512)(box_features)
+
+            num_images = len(boxes)
+            for i in range(num_images):
+                result.append(
+                    {
+                        "boxes": boxes[i],
+                        "labels": labels[i],
+                        "scores": scores[i],
+                    }
+                )
         else:
             # boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
             boxes, scores, labels, box_features = self.postprocess_detections_with_box_features(class_logits, box_regression, proposals, image_shapes, box_features)

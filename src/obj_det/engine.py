@@ -32,7 +32,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
 
-        loss_dict = model(images, targets)
+        loss_dict, _ = model(images, targets)
 
         # loss_dict, roi_feature = model(images, targets)
         # loss_dict, box_feature = model(images)

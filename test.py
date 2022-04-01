@@ -66,14 +66,31 @@ from collections import OrderedDict
 # output = m(i, [boxes], image_sizes)
 # print(output.shape)
 
-fc6 = nn.Linear(12544, 1024)
-fc7 = nn.Linear(1024, 1024)
+# fc6 = nn.Linear(12544, 1024)
+# fc7 = nn.Linear(1024, 1024)
 
-x = torch.rand(512,256,7,7)
-print(x.shape)
-x = x.flatten(start_dim=1)
-print(x.shape)
-x = F.relu(fc6(x))
-print(x.shape)
-x = F.relu(fc7(x))
-print(x.shape)
+# x = torch.rand(512,256,7,7)
+# print(x.shape)
+# x = x.flatten(start_dim=1)
+# print(x.shape)
+# x = F.relu(fc6(x))
+# print(x.shape)
+# x = F.relu(fc7(x))
+# print(x.shape)
+
+def create_grids(img_size, nGh, nGw):
+    stride = img_size[0]/nGw
+    assert stride == img_size[1] / nGh, \
+            "{} v.s. {}/{}".format(stride, img_size[1], nGh)
+
+    # build xy offsets
+    grid_x = torch.arange(nGw).repeat((nGh, 1)).view((1, 1, nGh, nGw)).float()
+    grid_y = torch.arange(nGh).repeat((nGw, 1)).transpose(0,1).view((1, 1, nGh, nGw)).float()
+    #grid_y = grid_x.permute(0, 1, 3, 2)
+    grid_xy = torch.stack((grid_x, grid_y), 4)
+
+    # build wh gains
+    anchor_vec = anchors / stride
+    anchor_wh = anchor_vec.view(1, nA, 1, 1, 2)
+
+create_grids((1980, 1080), 1080, 1980)
