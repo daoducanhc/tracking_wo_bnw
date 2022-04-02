@@ -18,7 +18,7 @@ if not osp.exists(output_dir):
 
 from mot_data import MOTObjDetect
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import transforms as T
 
 # def plot(img, boxes):
