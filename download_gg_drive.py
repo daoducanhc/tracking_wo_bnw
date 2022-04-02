@@ -9,4 +9,4 @@ gdown.download(url, output, quiet=False)
 
 import zipfile
 with zipfile.ZipFile('download.zip', 'r') as zip_ref:
-    zip_ref.extractall('')
+    zip_ref.extractall('data')
