@@ -13,6 +13,8 @@ from torch import Tensor
 import numpy as np
 import torch.nn.functional as F
 import math
+import sys
+import gc
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -42,6 +44,8 @@ class GeneralizedRCNN(nn.Module):
     def eager_outputs(self, losses, detections):
         # type: (Dict[str, Tensor], List[Dict[str, Tensor]]) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]
         if self.training:
+            del detections
+            gc.collect()
             return losses
 
         return detections
