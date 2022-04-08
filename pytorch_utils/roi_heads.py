@@ -810,6 +810,7 @@ class RoIHeads(torch.nn.Module):
             matched_idxs = None
 
         box_features = self.box_roi_pool(features, proposals, image_shapes)
+        box_features = box_features.to('cuda:0')
         box_features = self.box_head(box_features)
 
         # roi_features = self.box_roi_pool(features, proposals, image_shapes)
@@ -818,6 +819,7 @@ class RoIHeads(torch.nn.Module):
 
         result = torch.jit.annotate(List[Dict[str, torch.Tensor]], [])
         losses = {}
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         if self.training:
             assert labels is not None and regression_targets is not None
             loss_classifier, loss_box_reg = fastrcnn_loss(
@@ -829,7 +831,8 @@ class RoIHeads(torch.nn.Module):
 
             boxes, scores, labels, box_features = self.postprocess_detections_with_box_features(class_logits, box_regression, proposals, image_shapes, box_features)
 
-            box_features = IDExtractor(len(box_features[0]), 512)(box_features)
+            box_features = box_features.to(class_logits.device)
+            box_features = IDExtractor(len(box_features[0]), 512).to(device)(box_features)
 
             num_images = len(boxes)
             for i in range(num_images):
@@ -844,7 +847,8 @@ class RoIHeads(torch.nn.Module):
             # boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
             boxes, scores, labels, box_features = self.postprocess_detections_with_box_features(class_logits, box_regression, proposals, image_shapes, box_features)
 
-            box_features = IDExtractor(len(box_features[0]), 512)(box_features)
+            box_features = box_features.to(device)
+            box_features = IDExtractor(len(box_features[0]), 512).to(device)(box_features)
 
             num_images = len(boxes)
             for i in range(num_images):

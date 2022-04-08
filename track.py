@@ -108,7 +108,6 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
         frame_id += 1
-        if(frame_id == 2): break
     # save results
     write_results(result_filename, results, data_type)
     return frame_id, timer.average_time, timer.calls
@@ -117,7 +116,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
 def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), exp_name='demo_tracktor_and_jde',
          save_images=False, save_videos=False, show_image=True):
     logger.setLevel(logging.INFO)
-    result_root = os.path.join(data_root, 'results', exp_name)
+    result_root = os.path.join('output', exp_name)
     mkdir_if_missing(result_root)
     data_type = 'mot'
 
@@ -216,7 +215,7 @@ if __name__ == '__main__':
                 MOT17-11-SDP
                 MOT17-13-SDP
             '''
-    data_root = "C:/Users/Admin/Desktop/Downloads/MOT17/images/train"
+    data_root = "data/MOT17/images/train"
 
     seqs = [seq.strip() for seq in seqs_str.split()]
 

@@ -14,6 +14,8 @@ import numpy as np
 import torch.nn.functional as F
 import math
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
 class GeneralizedRCNN(nn.Module):
     """
     Main class for Generalized R-CNN.
@@ -103,12 +105,14 @@ class GeneralizedRCNN(nn.Module):
         detections, detector_losses, box_features = self.roi_heads(features, proposals, images.image_sizes, targets)
         detections = self.transform.postprocess(detections, images.image_sizes, original_image_sizes)
 
-        reID_losses = {"loss_reID" : reIDLoss(detections, box_features, targets)}
+        if targets is not None:
+            reID_losses = {"loss_reID" : reIDLoss(detections, box_features, targets)}
 
         losses = {}
         losses.update(detector_losses)
         losses.update(proposal_losses)
-        losses.update(reID_losses)
+        if targets is not None:
+            losses.update(reID_losses)
 
         if torch.jit.is_scripting():
             if not self._has_warned:
@@ -123,7 +127,7 @@ def reIDLoss(detections, box_features, targets):
     nID = 548
     emb_scale = math.sqrt(2) * math.log(nID-1)
 
-    lid = torch.Tensor(1).fill_(0).squeeze()
+    lid = torch.Tensor(1).fill_(10).squeeze()
     if len(detections) > 0:
         batches = len(detections)
         # losses = []
@@ -143,14 +147,12 @@ def reIDLoss(detections, box_features, targets):
 
             embedding = box_features[id_index]
             embedding = emb_scale * F.normalize(embedding)
-
-            embedding = nn.Linear(embedding.shape[1], nID)(embedding).contiguous()
+            embedding = nn.Linear(embedding.shape[1], nID).to(device)(embedding).contiguous()
 
             index = index[id_index]
             tids = track_ids[index]
-
-            lid = nn.CrossEntropyLoss(ignore_index=-1)(embedding, tids)
-
+            if len(embedding) > 0:
+                lid = nn.CrossEntropyLoss(ignore_index=-1)(embedding, tids)
     return lid
 
 

@@ -1,4 +1,5 @@
 import time
+import os.path as osp
 from numba import jit
 from collections import deque
 import torch
@@ -183,7 +184,7 @@ class JDETracker(object):
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model = get_detection_model(2)
         self.model.to(self.device)
-        self.model.load_state_dict(torch.load(osp.join("output/mot_17", '.model'), map_location=self.device)
+        self.model.load_state_dict(torch.load(osp.join("output/mot_17", 'model_epoch_27.model'), map_location=self.device))
         # load_darknet_weights(self.model, opt.weights)
         # self.model.load_state_dict(torch.load(opt.weights, map_location='cpu')['model'], strict=False)
         self.model.eval()
@@ -229,6 +230,7 @@ class JDETracker(object):
         t1 = time.time()
         ''' Step 1: Network forward, get detections & embeddings'''
         with torch.no_grad():
+            im_blob = im_blob.to(self.device)
             detection, box_feature = self.model(im_blob)
         # pred is tensor of all the proposals (default number of proposals: 54264). Proposals have information associated with the bounding box and embeddings
         # pred = pred[pred[:, :, 4] > self.opt.conf_thres]
@@ -247,7 +249,9 @@ class JDETracker(object):
 
             detections = []
             for (tlbrs, f) in zip(dets[:, :5], dets[:, 5:]):
-                temp = STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f.numpy(), 30)
+                temp = STrack(STrack.tlbr_to_tlwh(tlbrs[:4].detach().cpu().clone().numpy()),
+                tlbrs[4],
+                f.detach().cpu().clone().numpy(), 30)
                 detections.append(temp)
 
             # detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f.numpy(), 30) for

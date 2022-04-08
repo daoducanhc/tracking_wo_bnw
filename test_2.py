@@ -129,7 +129,6 @@ data_loader_test = torch.utils.data.DataLoader(
 
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
 # get the model using our helper function
 model = get_detection_model(dataset.num_classes)
 # move model to the right device
@@ -176,7 +175,6 @@ num_epochs = 2
 for epoch in range(1, num_epochs + 1):
     print(f'TRAIN {data_loader.dataset}')
     # train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
-
     train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
 
     # update the learning rate
