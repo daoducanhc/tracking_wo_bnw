@@ -225,7 +225,7 @@ if __name__ == '__main__':
                 MOT17-12-SDP
                 MOT17-14-SDP
             '''
-    data_root = "data/MOT17/images/train"
+    data_root = "data/MOT17/images/test"
 
     seqs = [seq.strip() for seq in seqs_str.split()]
 
