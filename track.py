@@ -207,19 +207,24 @@ if __name__ == '__main__':
     #                  MOT16-14'''
     #     data_root = '/home/wangzd/datasets/MOT/MOT16/images/test'
 
-    seqs_str = '''MOT17-02-SDP
-                MOT17-04-SDP
-                MOT17-05-SDP
-                MOT17-09-SDP
-                MOT17-10-SDP
-                MOT17-11-SDP
-                MOT17-13-SDP
+    # seqs_str = '''MOT17-02-SDP
+    #             MOT17-04-SDP
+    #             MOT17-05-SDP
+    #             MOT17-09-SDP
+    #             MOT17-10-SDP
+    #             MOT17-11-SDP
+    #             MOT17-13-SDP
+    #         '''
+    # data_root = "data/MOT17/images/train"
+
+    seqs_str = '''MOT17-01-SDP
+                MOT17-03-SDP
+                MOT17-06-SDP
+                MOT17-07-SDP
+                MOT17-08-SDP
+                MOT17-12-SDP
+                MOT17-14-SDP
             '''
-    # seqs_str = '''MOT17-09-SDP
-    #         MOT17-10-SDP
-    #         MOT17-11-SDP
-    #         MOT17-13-SDP
-    #     '''
     data_root = "data/MOT17/images/train"
 
     seqs = [seq.strip() for seq in seqs_str.split()]
