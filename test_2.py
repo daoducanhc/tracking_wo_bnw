@@ -83,11 +83,11 @@ def get_transform(train):
 train_split_seqs = test_split_seqs = None
 
 train_split_seqs = ['MOT17-02', 'MOT17-04', 'MOT17-05', 'MOT17-09', 'MOT17-10', 'MOT17-11', 'MOT17-13']
-# train_split_seqs = ['MOT17-05', 'MOT17-09', 'MOT17-11']
+# train_split_seqs = ['MOT17-05']
 
 test_split_seqs = ['MOT17-09']
-for seq in test_split_seqs:
-    train_split_seqs.remove(seq)
+# for seq in test_split_seqs:
+#     train_split_seqs.remove(seq)
 
 # use our dataset and defined transformations
 dataset = MOTObjDetect(
@@ -156,7 +156,7 @@ def evaluate_and_write_result_files(model, data_loader):
     imgs = [img.to(device) for img in imgs]
 
     with torch.no_grad():
-        preds = model(imgs)[0]
+        preds, _ = model(imgs)
 
     for pred, target in zip(preds, targets):
         results[target['image_id'].item()] = {'boxes': pred['boxes'].cpu(),
@@ -167,14 +167,13 @@ def evaluate_and_write_result_files(model, data_loader):
 # evaluate_and_write_result_files(model, data_loader_no_random)
 
 # num_epochs = 30
-num_epochs = 2
+num_epochs = 30
 
 # evaluate_and_write_result_files(model, data_loader_no_random)
 # evaluate_and_write_result_files(model, data_loader_test)
 
 for epoch in range(1, num_epochs + 1):
     print(f'TRAIN {data_loader.dataset}')
-    # train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
     train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
 
     # update the learning rate
@@ -182,5 +181,5 @@ for epoch in range(1, num_epochs + 1):
 
     # evaluate on the test dataset
     if epoch % 10 == 0:
-      evaluate_and_write_result_files(model, data_loader_test)
+    #   evaluate_and_write_result_files(model, data_loader_test)
       torch.save(model.state_dict(), osp.join(output_dir, f"model_epoch_{epoch}.model"))

@@ -113,7 +113,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     return frame_id, timer.average_time, timer.calls
 
 
-def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), exp_name='demo_tracktor_and_jde',
+def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), exp_name='demo_tracktor_and_jde10',
          save_images=False, save_videos=False, show_image=True):
     logger.setLevel(logging.INFO)
     result_root = os.path.join('track_results', exp_name)
@@ -215,6 +215,11 @@ if __name__ == '__main__':
                 MOT17-11-SDP
                 MOT17-13-SDP
             '''
+    # seqs_str = '''MOT17-09-SDP
+    #         MOT17-10-SDP
+    #         MOT17-11-SDP
+    #         MOT17-13-SDP
+    #     '''
     data_root = "data/MOT17/images/train"
 
     seqs = [seq.strip() for seq in seqs_str.split()]

@@ -70,7 +70,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
 
         loss_dict_reduced = {k: v.cpu() for k, v in loss_dict_reduced.items()}
-        loss_dicts.append(loss_dict_reduced)
+        # loss_dicts.append(loss_dict_reduced)
         # tb_writer.add_scalar('TRAIN/LR', lr_scheduler.get_last_lr(), epoch)
 
     return loss_dicts

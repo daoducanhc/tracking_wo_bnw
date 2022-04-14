@@ -860,8 +860,6 @@ class RoIHeads(torch.nn.Module):
                     }
                 )
 
-            losses.update(loss_mask)
-
         # keep none checks in if conditional so torchscript will conditionally
         # compile each branch
         if self.keypoint_roi_pool is not None and self.keypoint_head is not None \
