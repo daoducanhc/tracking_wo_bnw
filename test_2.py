@@ -166,15 +166,17 @@ def evaluate_and_write_result_files(model, data_loader):
   data_loader.dataset.print_eval(results)
 # evaluate_and_write_result_files(model, data_loader_no_random)
 
-# num_epochs = 30
 num_epochs = 30
 
 # evaluate_and_write_result_files(model, data_loader_no_random)
 # evaluate_and_write_result_files(model, data_loader_test)
 
+losses_reID = []
+
 for epoch in range(1, num_epochs + 1):
     print(f'TRAIN {data_loader.dataset}')
-    train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
+    loss_reID = train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
+    losses_reID.append(loss_reID)
 
     # update the learning rate
     lr_scheduler.step()
@@ -183,3 +185,8 @@ for epoch in range(1, num_epochs + 1):
     if epoch % 10 == 0:
     #   evaluate_and_write_result_files(model, data_loader_test)
       torch.save(model.state_dict(), osp.join(output_dir, f"model_epoch_{epoch}.model"))
+
+import json
+loss_plot = open('loss_plot.json', "w")
+json.dump(losses_reID, loss_plot)
+loss_plot.close()

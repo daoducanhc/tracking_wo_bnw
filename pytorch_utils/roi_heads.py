@@ -810,7 +810,6 @@ class RoIHeads(torch.nn.Module):
             matched_idxs = None
 
         box_features = self.box_roi_pool(features, proposals, image_shapes)
-        box_features = box_features.to('cuda:0')
         box_features = self.box_head(box_features)
 
         # roi_features = self.box_roi_pool(features, proposals, image_shapes)

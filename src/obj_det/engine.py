@@ -26,6 +26,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
 
 
     loss_dicts = []
+    losses_reID = []
     # box_features = []
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
         images = list(image.to(device) for image in images)
@@ -46,7 +47,6 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         # if(len(box_features)==10): break
 
         losses = sum(loss for loss in loss_dict.values())
-
         # reduce losses over all GPUs for logging purposes
         loss_dict_reduced = utils.reduce_dict(loss_dict)
         losses_reduced = sum(loss for loss in loss_dict_reduced.values())
@@ -73,7 +73,9 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         # loss_dicts.append(loss_dict_reduced)
         # tb_writer.add_scalar('TRAIN/LR', lr_scheduler.get_last_lr(), epoch)
 
-    return loss_dicts
+        losses_reID.append(loss_dict['loss_reID'])
+
+    return sum(losses_reID)/len(losses_reID)
     # return loss_dicts, roi_features
 
 
