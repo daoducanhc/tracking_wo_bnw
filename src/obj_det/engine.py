@@ -73,7 +73,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         # loss_dicts.append(loss_dict_reduced)
         # tb_writer.add_scalar('TRAIN/LR', lr_scheduler.get_last_lr(), epoch)
 
-        losses_reID.append(loss_dict['loss_reID'])
+        losses_reID.append(loss_dict['loss_reID'].detach().cpu())
 
     return sum(losses_reID)/len(losses_reID)
     # return loss_dicts, roi_features

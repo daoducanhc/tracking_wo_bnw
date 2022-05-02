@@ -184,9 +184,9 @@ for epoch in range(1, num_epochs + 1):
     # evaluate on the test dataset
     if epoch % 10 == 0:
     #   evaluate_and_write_result_files(model, data_loader_test)
-      torch.save(model.state_dict(), osp.join(output_dir, f"model_epoch_{epoch}.model"))
+      torch.save(model.state_dict(), osp.join(output_dir, f"model_epoch_{epoch}_16.model"))
 
 import json
-loss_plot = open('loss_plot.json', "w")
+loss_plot = open('loss_plot_16.json', "w")
 json.dump(losses_reID, loss_plot)
 loss_plot.close()
