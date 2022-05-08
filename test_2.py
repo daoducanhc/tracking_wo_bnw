@@ -56,7 +56,8 @@ from pytorch_utils import faster_rcnn
 def get_detection_model(num_classes):
     # load an instance segmentation model pre-trained on COCO
     # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=True)
+    # model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=True)
+    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=False)
 
     # get the number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -176,8 +177,8 @@ losses_reID = []
 for epoch in range(1, num_epochs + 1):
     print(f'TRAIN {data_loader.dataset}')
     loss_reID = train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200)
-    losses_reID.append(loss_reID)
-
+    losses_reID.append(loss_reID.item())
+    # print(losses_reID)
     # update the learning rate
     lr_scheduler.step()
 

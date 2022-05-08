@@ -18,7 +18,7 @@ from pytorch_utils import faster_rcnn
 def get_detection_model(num_classes):
     # load an instance segmentation model pre-trained on COCO
     # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=True)
+    model = faster_rcnn.fasterrcnn_resnet50_fpn(pretrained=False)
 
     # get the number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -184,7 +184,7 @@ class JDETracker(object):
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model = get_detection_model(2)
         self.model.to(self.device)
-        self.model.load_state_dict(torch.load(osp.join("output/mot_17", 'model_epoch_30.model'), map_location=self.device))
+        self.model.load_state_dict(torch.load(osp.join("output/mot_17", 'model_epoch_30_16.model'), map_location=self.device))
         # load_darknet_weights(self.model, opt.weights)
         # self.model.load_state_dict(torch.load(opt.weights, map_location='cpu')['model'], strict=False)
         self.model.eval()
